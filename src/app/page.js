@@ -24,7 +24,9 @@ import {
   deleteBahanBaku, 
   catatAktivitas, 
   getRiwayat, 
-  clearRiwayat 
+  clearRiwayat,
+  resetToSweetSaltSeed,
+  catatNgadonHariIni
 } from './actions';
 
 export default function Home() {
@@ -35,6 +37,50 @@ export default function Home() {
   const [actionLoading, setActionLoading] = useState(false);
   const [searchQuery, setSearchQuery] = useState('');
   
+  // Reset database with 16 Sweet Salt items
+  const handleResetSeed = async () => {
+    if (!confirm('PERHATIAN: Tindakan ini akan menghapus semua bahan baku & riwayat transaksi saat ini, lalu menggantinya dengan 16 Menu Default Sweet Salt. Anda yakin?')) return;
+    setActionLoading(true);
+    const res = await resetToSweetSaltSeed();
+    setActionLoading(false);
+    if (res.success) {
+      alert(`Berhasil mereset database! ${res.count} bahan baku Sweet Salt berhasil disinkronkan.`);
+      await loadData();
+    } else {
+      alert(res.error);
+    }
+  };
+
+  
+  // Ngadon state
+  const [ngadonTgl, setNgadonTgl] = useState(new Date().toISOString().slice(0, 10));
+  const [ngadonLoading, setNgadonLoading] = useState(false);
+  const [ngadonResult, setNgadonResult] = useState(null); // { results, notFound } | null
+
+  // Ngadon recipe (displayed in card)
+  const NGADON_RECIPE = [
+    { nama: 'Dark Chocolate', jumlah: 640, satuan: 'gram' },
+    { nama: 'Milk Chocolate', jumlah: 240, satuan: 'gram' },
+    { nama: 'Mentega',        jumlah: 200, satuan: 'gram' },
+    { nama: 'Susu UHT',       jumlah: 200, satuan: 'ml'   },
+    { nama: 'Tepung Terigu',  jumlah: 440, satuan: 'gram' },
+    { nama: 'Telur',          jumlah: 8,   satuan: 'butir' },
+    { nama: 'Gula',           jumlah: 400, satuan: 'gram' },
+  ];
+
+  const handleNgadon = async () => {
+    if (!confirm(`Konfirmasi ngadon hari ini (${ngadonTgl})? Stok 7 bahan akan dikurangi sesuai resep.`)) return;
+    setNgadonLoading(true);
+    const res = await catatNgadonHariIni(ngadonTgl);
+    setNgadonLoading(false);
+    if (res.success) {
+      setNgadonResult(res);
+      await loadData();
+    } else {
+      alert('Gagal mencatat ngadon: ' + res.error);
+    }
+  };
+
   // Form states
   const [pakaiBahanId, setPakaiBahanId] = useState('');
   const [pakaiJml, setPakaiJml] = useState('');
@@ -199,7 +245,7 @@ export default function Home() {
       {/* Header */}
       <header className="header">
         <div className="logo-container">
-          <div className="logo-icon">SS</div>
+          <div className="logo-icon">🧁</div>
           <div className="logo-text">
             <h1>SweetSalt</h1>
             <p>Bahan Baku Hub</p>
@@ -218,6 +264,9 @@ export default function Home() {
           <span>Sync</span>
         </button>
       </header>
+
+      {/* Brand Wave Accent */}
+      <div className="brand-wave"></div>
 
       {/* Tabs */}
       <nav className="tabs-navigation" id="navigation-bar">
@@ -274,10 +323,10 @@ export default function Home() {
               >
                 {/* Metrics */}
                 <div className="metric-grid" id="dashboard-metrics">
-                  <div className="metric-card" style={{ '--metric-accent': 'var(--color-cyan)' }}>
+                  <div className="metric-card" style={{ '--metric-accent': 'var(--color-info)' }}>
                     <div className="metric-header">
                       <span>Total Bahan</span>
-                      <Package size={16} style={{ color: 'var(--color-cyan)' }} />
+                      <Package size={16} style={{ color: 'var(--color-info)' }} />
                     </div>
                     <div className="metric-value">{totalBahan}</div>
                     <div className="metric-footer">Bahan baku terdaftar</div>
@@ -357,7 +406,7 @@ export default function Home() {
                 <div className="card">
                   <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '1.25rem', gap: '1rem', flexWrap: 'wrap' }}>
                     <h2 style={{ fontSize: '1.1rem', fontWeight: 700, display: 'flex', alignItems: 'center', gap: '8px' }}>
-                      <Sparkles size={16} style={{ color: 'var(--color-purple)' }} />
+                      <Sparkles size={16} style={{ color: 'var(--color-caramel)' }} />
                       Status Inventaris Bahan
                     </h2>
                     
@@ -439,12 +488,94 @@ export default function Home() {
                 animate={{ opacity: 1, y: 0 }}
                 exit={{ opacity: 0, y: -15 }}
                 transition={{ duration: 0.25 }}
-                className="split-grid"
+                style={{ display: 'flex', flexDirection: 'column', gap: '2rem' }}
               >
+                {/* ===== NGADON ONE-CLICK CARD ===== */}
+                <div className="ngadon-card" id="ngadon-section">
+                  <div className="ngadon-header">
+                    <div className="ngadon-header-left">
+                      <div className="ngadon-icon">🍫</div>
+                      <div>
+                        <h2 className="ngadon-title">Konfirmasi Ngadon Hari Ini</h2>
+                        <p className="ngadon-subtitle">Sekali klik — semua bahan adonan langsung tercatat otomatis</p>
+                      </div>
+                    </div>
+                    <div className="ngadon-date-wrap">
+                      <label htmlFor="input-ngadon-tgl" style={{ fontSize: '0.7rem', fontWeight: 700, textTransform: 'uppercase', letterSpacing: '0.06em', color: 'rgba(255,255,255,0.7)', marginBottom: '4px', display: 'block' }}>Tanggal Ngadon</label>
+                      <input
+                        type="date"
+                        id="input-ngadon-tgl"
+                        value={ngadonTgl}
+                        onChange={(e) => setNgadonTgl(e.target.value)}
+                        className="ngadon-date-input"
+                      />
+                    </div>
+                  </div>
+
+                  <div className="ngadon-recipe-grid">
+                    {NGADON_RECIPE.map((item) => (
+                      <div key={item.nama} className="ngadon-ingredient">
+                        <span className="ngadon-ingredient-name">{item.nama}</span>
+                        <span className="ngadon-ingredient-qty">{item.jumlah} <em>{item.satuan}</em></span>
+                      </div>
+                    ))}
+                  </div>
+
+                  <button
+                    onClick={handleNgadon}
+                    disabled={ngadonLoading || actionLoading}
+                    className="ngadon-btn"
+                    id="btn-ngadon-confirm"
+                  >
+                    {ngadonLoading
+                      ? <><RefreshCw size={18} className="animate-spin" /> Mencatat...</>
+                      : <><CheckCircle size={18} /> Iya, Hari Ini Udah Ngadon!</>}
+                  </button>
+                </div>
+
+                {/* Ngadon Result Receipt */}
+                <AnimatePresence>
+                  {ngadonResult && (
+                    <motion.div
+                      initial={{ opacity: 0, y: -10 }}
+                      animate={{ opacity: 1, y: 0 }}
+                      exit={{ opacity: 0, y: -10 }}
+                      className="ngadon-result-card"
+                      id="ngadon-result"
+                    >
+                      <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', marginBottom: '1rem' }}>
+                        <div style={{ display: 'flex', alignItems: 'center', gap: '10px' }}>
+                          <CheckCircle size={22} style={{ color: 'var(--color-success)', flexShrink: 0 }} />
+                          <div>
+                            <p style={{ fontWeight: 700, color: 'var(--color-success)', fontSize: '0.95rem' }}>Ngadon berhasil dicatat! 🎉</p>
+                            <p style={{ fontSize: '0.78rem', color: 'var(--text-secondary)', marginTop: '2px' }}>{ngadonResult.results.length} bahan dikurangi dari stok</p>
+                          </div>
+                        </div>
+                        <button onClick={() => setNgadonResult(null)} className="btn btn-sm" style={{ padding: '4px 10px', fontSize: '0.75rem' }}>✕ Tutup</button>
+                      </div>
+                      <div className="ngadon-receipt-grid">
+                        {ngadonResult.results.map(r => (
+                          <div key={r.nama} className="ngadon-receipt-item">
+                            <span>{r.nama}</span>
+                            <strong>−{r.jumlah} {r.satuan}</strong>
+                          </div>
+                        ))}
+                      </div>
+                      {ngadonResult.notFound.length > 0 && (
+                        <div style={{ marginTop: '0.75rem', padding: '0.75rem', background: 'var(--color-warning-bg)', borderRadius: '10px', fontSize: '0.8rem', color: '#92400e', border: '1px solid var(--color-warning-border)' }}>
+                          ⚠️ Bahan tidak ditemukan di database: <strong>{ngadonResult.notFound.join(', ')}</strong>. Pastikan nama bahan sesuai.
+                        </div>
+                      )}
+                    </motion.div>
+                  )}
+                </AnimatePresence>
+
+                {/* Manual forms below */}
+                <div className="split-grid">
                 {/* Catat Pemakaian */}
                 <div className="card">
                   <h2 className="form-title">
-                    <ArrowDownRight size={20} style={{ color: 'var(--color-pink)' }} />
+                    <ArrowDownRight size={20} style={{ color: 'var(--color-caramel)' }} />
                     Catat Pemakaian
                   </h2>
                   <form onSubmit={handleCatatPakai} id="form-pakai">
@@ -546,7 +677,7 @@ export default function Home() {
                     <button 
                       type="submit" 
                       className="btn btn-primary" 
-                      style={{ width: '100%', marginTop: '0.75rem', background: 'linear-gradient(135deg, var(--color-success), var(--color-cyan))', boxShadow: '0 4px 15px rgba(16, 185, 129, 0.25)' }}
+                      style={{ width: '100%', marginTop: '0.75rem', background: 'linear-gradient(135deg, var(--color-success), var(--color-seasalt))', boxShadow: '0 4px 15px var(--color-success-border)' }}
                       disabled={actionLoading}
                       id="submit-beli"
                     >
@@ -554,6 +685,7 @@ export default function Home() {
                     </button>
                   </form>
                 </div>
+                </div>{/* end split-grid manual forms */}
               </motion.div>
             )}
 
@@ -566,10 +698,28 @@ export default function Home() {
                 transition={{ duration: 0.25 }}
                 style={{ display: 'flex', flexDirection: 'column', gap: '2rem' }}
               >
+                {/* Quick Setup Database Banner */}
+                <div className="banner-card">
+                  <div className="banner-icon">🧁</div>
+                  <div className="banner-content" style={{ flex: 1 }}>
+                    <h3>Setup Cepat Menu Sweet Salt</h3>
+                    <p>Kosongkan data lama dan otomatis seed database dengan 16 daftar bahan baku menu Sweet Salt (dark coklat, oreo, packaging, dll) sesuai pengaturan pengirimannya.</p>
+                  </div>
+                  <button 
+                    onClick={handleResetSeed}
+                    disabled={actionLoading}
+                    className="btn btn-primary"
+                    id="btn-reset-seed"
+                    style={{ background: 'linear-gradient(135deg, var(--color-chocolate), var(--color-caramel))' }}
+                  >
+                    Reset ke Menu Sweet Salt
+                  </button>
+                </div>
+
                 {/* Form Tambah Bahan */}
                 <div className="card">
                   <h2 style={{ fontSize: '1.1rem', fontWeight: 700, marginBottom: '1.25rem', display: 'flex', alignItems: 'center', gap: '8px' }}>
-                    <Plus size={18} style={{ color: 'var(--color-purple)' }} />
+                    <Plus size={18} style={{ color: 'var(--color-caramel)' }} />
                     Tambah Bahan Baku Baru
                   </h2>
                   <form onSubmit={handleTambahBahan} id="form-tambah-bahan">

@@ -51,14 +51,20 @@ CREATE POLICY "Allow public delete access on riwayat_aktivitas" ON riwayat_aktiv
 -- 3. Seed Initial Data
 INSERT INTO bahan_baku (nama, satuan, stok, pakai, via, kirim)
 VALUES
-    ('Tepung terigu', 'kg', 10.0, 0.8, 'offline', 0),
-    ('Gula pasir', 'kg', 5.0, 0.5, 'offline', 0),
-    ('Telur', 'butir', 60.0, 5.0, 'offline', 0),
-    ('Santan / susu', 'liter', 4.0, 0.4, 'offline', 0),
-    ('Margarin', 'kg', 2.0, 0.2, 'offline', 0),
-    ('Baking powder', 'gram', 200.0, 10.0, 'online', 3),
-    ('Topping coklat', 'gram', 500.0, 30.0, 'online', 4),
-    ('Topping keju', 'gram', 400.0, 25.0, 'online', 4),
-    ('Kemasan / box', 'pcs', 150.0, 20.0, 'online', 5),
-    ('Arang / gas', 'kg', 5.0, 0.5, 'offline', 0)
+    ('dark coklat', 'kg', 10.0, 0.5, 'offline', 0),
+    ('milk coklat', 'kg', 10.0, 0.5, 'offline', 0),
+    ('mentega', 'kg', 5.0, 0.3, 'offline', 0),
+    ('gula', 'kg', 15.0, 0.8, 'offline', 0),
+    ('telur', 'butir', 120.0, 10.0, 'offline', 0),
+    ('tepung terigu', 'kg', 20.0, 1.5, 'offline', 0),
+    ('baking powder', 'gram', 500.0, 15.0, 'offline', 0),
+    ('baking soda', 'gram', 500.0, 15.0, 'offline', 0),
+    ('sendok plastik', 'pcs', 150.0, 10.0, 'online', 3),
+    ('kresek', 'pcs', 200.0, 15.0, 'online', 3),
+    ('packaging', 'pcs', 100.0, 8.0, 'online', 7),
+    ('stiker', 'pcs', 500.0, 20.0, 'offline', 0),
+    ('topping keju', 'gram', 1000.0, 50.0, 'offline', 0),
+    ('topping oreo', 'gram', 1000.0, 40.0, 'online', 4),
+    ('topping matcha glaze', 'gram', 1000.0, 30.0, 'offline', 0),
+    ('topping tiramisu glaze', 'gram', 1000.0, 30.0, 'offline', 0)
 ON CONFLICT DO NOTHING;
