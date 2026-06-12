@@ -703,7 +703,7 @@ export default function Home() {
                   <div className="banner-icon">🧁</div>
                   <div className="banner-content" style={{ flex: 1 }}>
                     <h3>Setup Cepat Menu Sweet Salt</h3>
-                    <p>Kosongkan data lama dan otomatis seed database dengan 16 daftar bahan baku menu Sweet Salt (dark coklat, oreo, packaging, dll) sesuai pengaturan pengirimannya.</p>
+                    <p>Kosongkan data lama dan otomatis seed database dengan 16 daftar bahan baku menu Sweet Salt (Dark Chocolate, oreo, packaging, dll) sesuai pengaturan pengirimannya.</p>
                   </div>
                   <button 
                     onClick={handleResetSeed}

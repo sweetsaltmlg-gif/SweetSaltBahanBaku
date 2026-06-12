@@ -196,8 +196,8 @@ export async function catatNgadonHariIni(tanggalVal) {
 
     // The fixed ngadon recipe
     const ngadonRecipe = [
-      { nama: 'dark coklat',   jumlah: 640 },
-      { nama: 'milk coklat',   jumlah: 240 },
+      { nama: 'Dark Chocolate',  jumlah: 640 },
+      { nama: 'Milk Chocolate',  jumlah: 240 },
       { nama: 'mentega',       jumlah: 200 },
       { nama: 'susu uht',      jumlah: 200 },
       { nama: 'tepung terigu', jumlah: 440 },
@@ -216,9 +216,21 @@ export async function catatNgadonHariIni(tanggalVal) {
     const notFound = [];
 
     for (const item of ngadonRecipe) {
-      // Case-insensitive match
+      // Case-insensitive match, handle coklat/chocolate alias
       const bahan = allBahan.find(
-        (b) => b.nama.toLowerCase().trim() === item.nama.toLowerCase().trim()
+        (b) => {
+          const dbName = b.nama.toLowerCase().trim();
+          const targetName = item.nama.toLowerCase().trim();
+          if (dbName === targetName) return true;
+          
+          if (targetName === 'dark chocolate' || targetName === 'dark coklat') {
+            return dbName === 'dark chocolate' || dbName === 'dark coklat';
+          }
+          if (targetName === 'milk chocolate' || targetName === 'milk coklat') {
+            return dbName === 'milk chocolate' || dbName === 'milk coklat';
+          }
+          return false;
+        }
       );
 
       if (!bahan) {
@@ -280,8 +292,8 @@ export async function resetToSweetSaltSeed() {
 
     // 3. Define the 16 Sweet Salt ingredients
     const sweetSaltSeedData = [
-      { nama: 'dark coklat', satuan: 'kg', stok: 10.0, pakai: 0.5, via: 'offline', kirim: 0 },
-      { nama: 'milk coklat', satuan: 'kg', stok: 10.0, pakai: 0.5, via: 'offline', kirim: 0 },
+      { nama: 'Dark Chocolate', satuan: 'kg', stok: 10.0, pakai: 0.5, via: 'offline', kirim: 0 },
+      { nama: 'Milk Chocolate', satuan: 'kg', stok: 10.0, pakai: 0.5, via: 'offline', kirim: 0 },
       { nama: 'mentega', satuan: 'kg', stok: 5.0, pakai: 0.3, via: 'offline', kirim: 0 },
       { nama: 'gula', satuan: 'kg', stok: 15.0, pakai: 0.8, via: 'offline', kirim: 0 },
       { nama: 'telur', satuan: 'butir', stok: 120.0, pakai: 10.0, via: 'offline', kirim: 0 },

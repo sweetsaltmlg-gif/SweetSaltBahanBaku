@@ -51,8 +51,8 @@ CREATE POLICY "Allow public delete access on riwayat_aktivitas" ON riwayat_aktiv
 -- 3. Seed Initial Data
 INSERT INTO bahan_baku (nama, satuan, stok, pakai, via, kirim)
 VALUES
-    ('dark coklat', 'kg', 10.0, 0.5, 'offline', 0),
-    ('milk coklat', 'kg', 10.0, 0.5, 'offline', 0),
+    ('Dark Chocolate', 'kg', 10.0, 0.5, 'offline', 0),
+    ('Milk Chocolate', 'kg', 10.0, 0.5, 'offline', 0),
     ('mentega', 'kg', 5.0, 0.3, 'offline', 0),
     ('gula', 'kg', 15.0, 0.8, 'offline', 0),
     ('telur', 'butir', 120.0, 10.0, 'offline', 0),
